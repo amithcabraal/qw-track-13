@@ -13,6 +13,7 @@ function App() {
   const [user, setUser] = useState<SpotifyUser | null>(null);
   const [playlists, setPlaylists] = useState<SpotifyPlaylist[]>([]);
   const [currentTrack, setCurrentTrack] = useState<SpotifyTrack | null>(null);
+  const [currentPlaylist, setCurrentPlaylist] = useState<SpotifyPlaylist | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [playedTracks, setPlayedTracks] = useState<Set<string>>(new Set());
 
@@ -36,6 +37,7 @@ function App() {
 
   const handlePlaylistSelect = async (playlist: SpotifyPlaylist) => {
     try {
+      setCurrentPlaylist(playlist);
       const response = await getPlaylistTracks(playlist.id);
       const validTracks = response.items
         .map(item => item.track)
@@ -57,15 +59,17 @@ function App() {
     }
   };
 
-  const handlePlayAgain = () => {
-    if (currentTrack) {
-      const currentPlaylist = playlists.find(p => 
-        p.tracks.items?.some(item => item.track.id === currentTrack.id)
-      );
-      if (currentPlaylist) {
-        handlePlaylistSelect(currentPlaylist);
-      }
+  const handlePlayAgain = async () => {
+    if (currentPlaylist) {
+      await handlePlaylistSelect(currentPlaylist);
     }
+  };
+
+  const handleResetPlaylist = () => {
+    setCurrentPlaylist(null);
+    setCurrentTrack(null);
+    setPlayedTracks(new Set());
+    setError(null);
   };
 
   return (
@@ -85,6 +89,7 @@ function App() {
                     error={error}
                     onPlaylistSelect={handlePlaylistSelect}
                     onPlayAgain={handlePlayAgain}
+                    onResetPlaylist={handleResetPlaylist}
                   />
                 ) : (
                   <Navigate to="/login" replace />
