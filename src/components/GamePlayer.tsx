@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, Check, X, RotateCw, Loader } from 'lucide-react';
+import { Play, Pause, RotateCw, Loader } from 'lucide-react';
 import { SpotifyTrack } from '../types/spotify';
 import { usePlayer } from '../hooks/usePlayer';
 import { calculateSimilarity } from '../utils/similarity';
@@ -69,6 +69,13 @@ export const GamePlayer: React.FC<GamePlayerProps> = ({ track, onGameComplete, o
     };
   };
 
+  const getScoreColor = (score: number): string => {
+    if (score >= 80) return 'text-green-500';
+    if (score >= 50) return 'text-yellow-500';
+    if (score < 30) return 'text-red-500';
+    return 'text-gray-900';
+  };
+
   const handleSubmitGuess = () => {
     const result = calculateScore();
     setResult(result);
@@ -96,8 +103,8 @@ export const GamePlayer: React.FC<GamePlayerProps> = ({ track, onGameComplete, o
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-6">
+    <div className="min-h-[calc(100vh-4rem)] bg-gray-100 flex items-start justify-center p-4">
+      <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-6 mt-4">
         {error ? (
           <div className="text-red-500 text-center p-4">{error}</div>
         ) : !isInitialized ? (
@@ -108,21 +115,39 @@ export const GamePlayer: React.FC<GamePlayerProps> = ({ track, onGameComplete, o
         ) : result ? (
           <div className="text-center">
             <div className="mb-6">
-              <img
-                src={track.album.images[0]?.url}
-                alt={track.album.name}
-                className="w-48 h-48 mx-auto rounded-lg shadow-md"
-              />
+              <a 
+                href={`https://open.spotify.com/album/${track.album.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block hover:opacity-90 transition-opacity"
+              >
+                <img
+                  src={track.album.images[0]?.url}
+                  alt={track.album.name}
+                  className="w-48 h-48 mx-auto rounded-lg shadow-md"
+                />
+              </a>
             </div>
-            <div className={`text-6xl mb-4 ${result.isCorrect ? 'text-green-500' : 'text-red-500'}`}>
-              {result.isCorrect ? <Check /> : <X />}
+            <div className={`text-4xl font-bold mb-4 ${getScoreColor(result.score)}`}>
+              {result.score} points
             </div>
             <div className="mb-4">
-              <h3 className="text-xl font-bold">{track.name}</h3>
-              <p className="text-gray-600">{track.artists[0].name}</p>
-            </div>
-            <div className="text-3xl font-bold mb-4">
-              Score: {result.score}
+              <a 
+                href={`https://open.spotify.com/track/${track.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xl font-bold hover:text-green-600 transition-colors"
+              >
+                {track.name}
+              </a>
+              <a 
+                href={`https://open.spotify.com/artist/${track.artists[0].id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block text-gray-600 hover:text-green-600 transition-colors"
+              >
+                {track.artists[0].name}
+              </a>
             </div>
             <div className="text-gray-600 mb-6">
               Time: {formatTime(timer)}s
